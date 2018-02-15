@@ -1,0 +1,12 @@
+name = GUMI
+description = Spécifique GUMI.
+package = Gumi
+core = 7.x
+
+
+; Information added by drupal.org packaging script on 2013-01-26
+version = "7.x-1.0"
+core = "7.x"
+project = "gumi"
+datestamp = "1359196701"
+

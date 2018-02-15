@@ -1,0 +1,5 @@
+name = Register Gumi
+description = Register users gumi.
+package = Gumi
+core = "7.x"
+version = "7.x-1.0"

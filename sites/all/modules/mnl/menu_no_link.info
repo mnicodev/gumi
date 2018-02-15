@@ -1,0 +1,10 @@
+name = "Menu no link"
+description = "Adds option to include hash in menu path"
+core = 7.x
+package = "Pfizer Custom"
+; Information added by Drupal.org packaging script on 2017-11-14
+version = "7.x-1.0"
+core = "7.x"
+project = "mnl"
+datestamp = "1510666988"
+

@@ -1,0 +1,28 @@
+<?php
+
+function gumi_player_block_info() {
+	$blocks["block_player"]= array(
+		'info'=>t("Bloc des données joueur GUMI"),
+		'status'=>TRUE,
+		//'visibility'=>
+		
+	);
+	return $blocks;
+}
+
+function gumi_player_block_view($delta = '') {
+	$block = array();
+	$block["subject"]=t("Données joueur");
+	$block["content"]=theme("block_player",array("data"=>"ok"));
+	
+	return $block;
+}
+
+function gumi_player_theme() {
+	return array(
+		"block_player" => array(
+			'template' => 'block_player',
+			'arguments' => array(),
+		),
+	);
+}

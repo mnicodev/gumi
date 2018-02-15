@@ -1,0 +1,278 @@
+<?php
+
+define("WEEK",1);
+
+function gumi_block_block_info() {
+	$blocks["block_player"]= array(
+		'info'=>t("Bloc des données joueur GUMI"),
+		'status'=>TRUE,
+		//'cache' => DRUPAL_CACHE_PER_ROLE,
+		//'visibility'=>
+		
+	);
+
+	$blocks['block_picture'] = array(
+		'info' => t('Picture gamer'),
+		'status' => TRUE,
+	);
+	
+	
+
+	$blocks['block_article_categorie'] = array(
+		'info' => t('Category articles'),
+		'status' => TRUE,
+		
+	);
+	
+	$blocks['block_player_fiche'] = array(
+		'info' => t('Gamer profil'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'pages' => 'node/*',
+	);
+	
+	$blocks['block_reaction'] = array(
+		'info' => t('Gamer reactions'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'pages' => 'user',
+	);
+	
+	$blocks['block_activity'] = array(
+		'info' => t('Gamer activity'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'pages' => 'user',
+	);
+	
+	$blocks['block_notice'] = array(
+		'info' => t('Admin notice'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+		'pages' => 'user',
+	);
+	
+	$blocks['block_leaderboard_all'] = array(
+		'info' => t('All time champions'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+	);
+	
+	$blocks['block_leaderboard_week'] = array(
+		'info' => t('Members of the week'),
+		'status' => TRUE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+	);
+	
+	$blocks['block_game_status'] = array(
+		'info' => t('Game status'),
+		'status' => FALSE,
+		'visibility' => BLOCK_VISIBILITY_LISTED,
+	);
+	
+	return $blocks;
+}
+
+function gumi_block_block_view($delta = '') {
+	global $language,$user, $_COOKIE;
+	$block = array();
+	
+	switch($delta) {
+		
+		case "block_game_status": 
+			$block["subject"]=t("Game status");
+			$block["content"]=theme("block_game_status",array("data"=>""));
+			break;
+		case "block_notice": 
+			$block["subject"]=t("Admin notice");
+			$data=array();
+			if(!isset($_COOKIE["token_gumi"])) $data["cookie_notice"]=t('Your token is out of date or no longer exists. Please reconnect.');
+			
+			if(count($data)) $block["content"]=theme("block_notice",array("data"=>$data));
+			break;
+			
+		case "block_player":
+			$block["subject"]=t("Données joueur");
+			$block["content"]=theme("block_player",array("data"=>"ok"));
+			break;
+		case "block_picture":
+			$block["subject"]=t("Picture gamer");
+			
+			$block["content"]=theme("block_picture",array("user"=>_get_user_picture($user)));
+			break;
+			
+		case "block_article_categorie":
+			$block["subject"]=t("Category articles");
+			$liste=_get_category_articles();
+			
+			$block["content"]=theme("block_article_categorie",_get_category_articles());
+			break;
+			
+		case "block_player_fiche":
+		
+			$block["subject"]=t("Gamer profil");
+			$block["content"]=theme("block_player_fiche",array("data"=>_get_profil()));
+			break;
+		case "block_reaction":
+		
+			$block["subject"]=t("Gamer reactions");
+			$block["content"]=theme("block_reaction",array("data"=>_get_reactions()));
+			break;
+		case "block_activity":
+		
+			$block["subject"]=t("Gamer activity");
+			$block["content"]=theme("block_activity",array("data"=>_get_activity()));
+			break;
+		case "block_leaderboard_all":
+			$block["subject"]=t("All time champions");
+			
+			$block["content"]=theme("block_leaderboard",array("data"=>_get_leaderboard()));
+			break;
+		case "block_leaderboard_week":
+			$block["subject"]=t("Members of the week");
+			$block["content"]=theme("block_leaderboard",array("data"=>_get_leaderboard(WEEK)));
+			break;
+	}
+	
+	
+	
+	return $block;
+}
+
+function gumi_block_theme() {
+	return array(
+		"block_player" => array(
+			'template' => 'block_player',
+			'arguments' => array(),
+		),
+		"block_picture" => array(
+			'template' => 'block_picture',
+			'arguments' => array(),
+		),
+
+		"block_article_categorie" => array(
+			'template' => 'block_category_article',
+			'arguments' => array()
+		),
+		"block_player_fiche" => array(
+			'template' => 'block_profil',
+			'arguments' => array()
+		),
+		"block_reaction"=>array(
+			'template'=>'block_reactions',
+			'arguments' => array()
+		),
+		"block_activity"=>array(
+			'template'=>'block_activity',
+			'arguments' => array()
+		),
+		"block_notice"=>array(
+			'template'=>'block_notice',
+			'arguments' => array()
+		),
+		"block_leaderboard"=>array(
+			'template'=>'block_leaderboard',
+			'arguments' => array()
+		),
+		"block_game_status"=>array(
+			'template'=>'block_game_status',
+			'arguments' => array()
+		)
+		
+	);
+}
+function _get_reactions() {
+	global $user;
+	
+	$query=db_query("select 
+		(select count(vote_id) from  votingapi_vote where value=100 and  uid=:uid) as amazing,
+		(select count(vote_id) from  votingapi_vote where value=80 and  uid=:uid) as great,
+		(select count(vote_id) from  votingapi_vote where value=60 and  uid=:uid) as fine,
+		(select count(vote_id) from  votingapi_vote where value=40 and  uid=:uid) as fair,
+		(select count(vote_id) from  votingapi_vote where value=20 and  uid=:uid) as bad
+		from votingapi_vote where  uid=:uid",
+		array(":uid"=>$user->uid)
+	);
+	$data=current($query->fetchAll());
+	//print_r($data);
+	return $data;
+}
+function _get_activity() {
+	global $user;
+	
+	$query=db_query("select count(nid) as data from {node} where uid= :uid and type='forum'",array(":uid"=>$user->uid));
+	$data["posts"]=current($query->fetchAll());
+	
+	$query=db_query("select count(cid) as data from {comment} where uid= :uid",array(":uid"=>$user->uid));
+	$data["comments"]=current($query->fetchAll());
+	return $data;
+}
+
+
+function _get_profil() {
+	global $user;
+	
+	$user_gumi=current(entity_load("user",null,array("uid"=>$user->uid)));
+	/*$query=db_query("select uri from {file_managed} where uid= :uid order by timestamp desc limit 1",array(":uid"=>$user->uid));
+	$rs=current($query->fetchAll());*/
+	
+	$fiche["fiche"]=$user_gumi;
+	//$fiche["picture"]=$rs->uri;
+	
+	
+	return $user_gumi;
+	
+}
+
+function _get_category_articles() {
+	global $language;; 
+	$voc=taxonomy_vocabulary_machine_name_load("categories"); 
+	$node=node_load(arg(1)); 
+	
+	if(is_object($node) && isset($node->field_category["und"][0]["tid"])) $id=$node->field_category["und"][0]["tid"];
+	else $id=arg(2);
+	
+	$categories=taxonomy_get_tree($voc->vid);
+	
+	return array("language"=>$language,"liste"=>$categories,"tid"=>$id);
+}
+
+function _get_user_picture($user) {
+	
+	if(is_object($user) && !empty($user->uid)) {
+		$user_gumi=current(entity_load("user",null,array("uid"=>$user->uid)));
+	//print_r(current($user_gumi->field_player_name));
+		if(is_object($user_gumi) && isset($user_gumi->picture->uri)) {
+			return $user_gumi; //image_style_url("picture",$user_gumi->picture->uri);
+		} else {
+			/*$query=db_query("select uri from {file_managed} where uid= :uid order by timestamp desc limit 1",array(":uid"=>$user->uid));
+			$rs=current($query->fetchAll());
+			return image_style_url("picture",$rs->uri);*/
+			
+		}
+			
+	}
+	return false;
+}
+
+
+function _get_leaderboard($week=null) {
+	if($week)
+		$query=db_query("SELECT c.uid, count(cid) as total FROM comment c join users_roles ur on c.uid=ur.uid where ur.rid=4 and week(date_format(from_unixtime(c.created),'%Y-%m-%d'))=week(now()) group by c.uid order by total desc ");
+	else 
+		$query=db_query("SELECT c.uid, count(cid) as total FROM {comment} c join users_roles ur on c.uid=ur.uid where ur.rid=4  group by c.uid order by total desc");
+	
+	$data=null;
+	foreach($query->fetchAll() as $item) {
+		$u=current(entity_load("user",array("uid"=>$item->uid)));
+		//print_r($u);
+		if(isset($u->picture->uri)) $picture=image_style_url("picture",$u->picture->uri);
+		else $picture="/sites/all/themes/forum_plus/img/gumi.png";
+		$data[]=array("score"=>$item->total,"user"=>$picture);
+	}
+	//print_r($data);
+	return $data;
+	
+}
+
+//

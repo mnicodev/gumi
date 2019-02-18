@@ -1,5 +1,0 @@
-name = Authentication Gumi
-description = Authenticate users against an external service.
-package = Gumi
-core = "7.x"
-version = "7.x-1.0"

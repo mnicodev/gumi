@@ -1,5 +1,0 @@
-name = Block player Gumi
-description = Création d'un bloc d'information du joueur.
-package = Gumi
-core = "7.x"
-version = "7.x-1.0"

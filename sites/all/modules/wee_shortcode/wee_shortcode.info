@@ -1,7 +1,0 @@
-name = Extra Shortcode For Bootstrap
-description = Provides bootstrap component to contents.
-package = Shortcode
-core = 7.x
-dependencies[] = shortcode
-
-
